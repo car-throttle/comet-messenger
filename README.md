@@ -4,8 +4,6 @@
 ![Circle CI](https://circleci.com/gh/car-throttle/comet-messenger/tree/master.svg?style=shield)
 ![Coverage Status](https://coveralls.io/repos/car-throttle/comet-messenger/badge.svg?branch=master&service=github)
 
-Oembed URL expansion route for Express apps.
-
 Node-JS microservice-oriented framework for interacting with
 [Facebook Messenger](https://developers.facebook.com/products/messenger/) :sunglasses:
 
