@@ -1,0 +1,48 @@
+{
+  "name": "comet-messenger",
+  "version": "1.0.0",
+  "description": "Yet another way to interact with Facebook Messenger in Node-JS",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "posttest": "istanbul check-coverage",
+    "test": "LOG_LEVEL=fatal istanbul cover _mocha -- test/**/*.test.js test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/car-throttle/comet-messenger.git"
+  },
+  "keywords": [
+    "Facebook",
+    "Messenger",
+    "Bots"
+  ],
+  "files": [
+    "bin",
+    "src"
+  ],
+  "author": "James Dryden <james.dryden@carthrottle.com> (https://carthrottle.io)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/car-throttle/comet-messenger/issues"
+  },
+  "homepage": "https://github.com/car-throttle/comet-messenger#readme",
+  "dependencies": {
+    "debug": "^2.6.3",
+    "deep-extend": "^0.4.1",
+    "express-x-hub": "^1.0.4",
+    "lodash.get": "^4.4.2",
+    "lodash.template": "^4.4.0",
+    "lodash.templatesettings": "^4.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-plugin-mocha": "^4.9.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "nock": "^9.0.13"
+  },
+  "engines": {
+    "node": ">=7.8.0"
+  }
+}

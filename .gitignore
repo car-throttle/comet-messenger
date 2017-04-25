@@ -1,0 +1,4 @@
+*.DS_Store
+coverage/
+examples/config.js
+node_modules/
