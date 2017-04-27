@@ -122,8 +122,9 @@ app.use('/api/fb-messenger-bots', comet.createExpressRouter({
   pages,
 
   /**
-   * A function which accepts a Promise in return, so you can push messages onto your preferred queue stack.
-   * Since this function is wrapped around an await call, it doesn't matter if this function is asynchronous or not.
+   * A function which accepts a Promise in return, so you can push messages onto your preferred queue
+   * stack. Since this function is wrapped around an await call, it doesn't matter if this function is
+   * asynchronous or not.
    *
    * @param Array payloads
    * @return Promise
@@ -228,7 +229,7 @@ schema.catchInput(function ({ send }) {
 });
 ```
 
-### schema.before(function)
+### schema.before(function)
 
 This queues a function to run before the main input/postback function, allowing data to be fetched before all business
 logic. Use this to fetch [the user's profile from Facebook](#) or load state or record analytics.
@@ -239,7 +240,7 @@ schema.before(async function (req) {
 
   req.user = await getUserFromFacebookAndCache({ user_id: payload.user_id });
   req.state = await getStateForUser({ page: page.id, user_id: payload.user_id });
-  req.pointer = req.state.getPointer(); // This could return a string, like 'SENDING_FAV_COLOR' or something
+  req.pointer = req.state.getPointer(); // This could return a string, like 'SENDING_FAV_COLOR'
 });
 ```
 
@@ -258,14 +259,14 @@ schema.before(async function (req) {
 
 Suddenly, if the concept of state is introduced we don't need one function to handle all free-flowing text that a user
 sends to a bot. Which could be a lot, they're inside a messaging app, it's sort of a given? In any case, setting
-`req.pointer` [in a before function](#schema-before-function) will mean Comet will look for a input function referring
+`req.pointer` [in a before function](#schemabeforefunction) will mean Comet will look for a input function referring
 to a particular state, **exactly like a postback function**, which means we can handle all kinds of input from the user
 with little difficulty:
 
 ```js
 schema.onInput('SENDING_FAV_COLOR', function ({ payload, send }) {
-  // If the user triggers this function, it means we KNOW we've marked them as SENDING_FAV_COLOR, so we know what
-  // we're expecting. Hooray!
+  // If the user triggers this function, it means we KNOW we've marked them as SENDING_FAV_COLOR, so we
+  // know what we're expecting. Hooray!
   const colour = (payload.text || '').trim();
   if (colour.indexOf('#') === 0) return send('Ooh, a hex code? You\'re not a developer, are you?');
   else return send(`Cool, ${colour} is my favourite colour too!`);
