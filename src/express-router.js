@@ -1,9 +1,13 @@
 const crypto = require('crypto');
-const utils = require('./lib/utils');
 const xhub = require('express-x-hub');
 
-const bodyParser = utils.tryRequire('body-parser');
-const express = utils.tryRequire('express');
+function tryRequire(module) {
+  try { return require(module); }
+  catch (err) { return null; }
+}
+
+const bodyParser = tryRequire('body-parser');
+const express = tryRequire('express');
 
 module.exports = function createExpressRouter({ pages, queue, app_secret, verify_token, logger }) {
   if (!express) throw new Error('Module "express" not found - did you forget to install it?');

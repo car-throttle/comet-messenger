@@ -2,8 +2,6 @@ const debug = require('debug')('Comet:Worker');
 
 const facebook = require('./lib/facebook-api');
 const messageFactory = require('./lib/messages');
-const stateFactory = require('./lib/state');
-const utils = require('./lib/utils');
 
 module.exports = function createWorker({ pages, schema }) {
   const pages_lookup = {};
@@ -38,43 +36,34 @@ module.exports = function createWorker({ pages, schema }) {
         case 'input':
           fn = schema._getFunction('input._catch') || function () { /* NOOP */ };
           break;
-        case 'silenced':
-          fn = forceSilenced;
       }
       if (typeof fn !== 'function') throw new Error(`Unknown type for payload: ${JSON.stringify(payload)}`);
 
-      // in parallel, get user and state
-      const [ state, user ] = await Promise.all([
-        getState({ schema, page, user_id }), getUser({ schema, page, user_id })
-      ]);
+      const req = {
+        page, payload, // eslint-disable-line object-property-newline
+        meta: {}, // Create a meta object, which will be returned at the end, for logging etc.
+        send: createSend({ page, user_id }), // Create a simplified send function to make this easy
+      };
 
-      debug(JSON.stringify({ payload, state: state.fetch(), user }));
+      // Run the before functions in parallel
+      const beforeFns = schema._getFunction('before');
+      if (beforeFns) await Promise.all(beforeFns.map(bfn => bfn(req)));
 
-      if (state.isSilenced()) {
-        // If the user has been SILENCED, no more communication should happen
-        // Unless they initated a GETTING_STARTED
-        if (!payload.postback || payload.postback.trigger !== 'GETTING_STARTED') return Promise.resolve();
+      debug(JSON.stringify(req));
+
+      if (req.pointer && payload.type === 'input') {
+        fn = schema._getFunction(`input.${req.pointer}`);
+        if (typeof fn !== 'function') throw new Error(`Missing input function for state "${req.pointer}"`);
       }
-
-      if (state.getPointer() && payload.type === 'input') {
-        fn = schema._getFunction(`input.${state.getPointer()}`);
-        if (typeof fn !== 'function') throw new Error(`Missing input function for state "${state.getPointer()}"`);
-      }
-
-      const meta = {};
 
       // run relevant function
-      await fn({
-        meta, page, payload, state, user, // eslint-disable-line object-property-newline
-        // Create a simplified send function to make this easy
-        send: createSend({ page, user_id }),
-        // And don't forget
-        text: createText({ page }),
-      });
+      await fn(req);
 
-      if (state.isModified()) await saveState({ schema, page, state: state.fetch(), user_id });
+      // Run the after functions in parallel
+      const afterFns = schema._getFunction('after');
+      if (afterFns) await Promise.all(afterFns.map(afn => afn(req)));
 
-      return meta;
+      return req.meta;
     },
   };
 };
@@ -89,32 +78,4 @@ function createSend({ page, user_id }) {
       await facebook.send({ access_token: token, message, user_id }); // eslint-disable-line no-await-in-loop
     }
   };
-}
-
-function createText({ page }) {
-  return (...args) => utils.formatText(page.text || {}, ...args);
-}
-
-async function getState({ schema, page, user_id }) {
-  const fn = schema._getFunction('getUserState');
-  const data = (typeof fn === 'function') ? await fn({ page, user_id }) : schema._getDefaultState();
-  const state = stateFactory.create(data);
-  return state;
-}
-
-function forceSilenced({ state }) {
-  state.setSilenced(true);
-}
-
-function saveState({ schema, page, state, user_id }) {
-  const fn = schema._getFunction('setUserState');
-  if (typeof fn !== 'function') return Promise.resolve();
-
-  return fn({ page, state, user_id });
-}
-
-async function getUser({ schema, page, user_id }) {
-  const fn = schema._getFunction('getUserProfile');
-  const user = await fn({ page, user_id });
-  return user;
 }
