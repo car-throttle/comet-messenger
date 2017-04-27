@@ -80,19 +80,27 @@ const pages = module.exports.pages = [
  */
 const schema = comet.createSchema();
 
+schema.before(async function (req) {
+  const { payload, page } = req;
+  const { user_id } = payload;
+
+  // In production you should cache this, otherwise you'll be wasting resources hitting Facebook for a user profile
+  // that realistically isn't going to change too much!
+  req.user = await comet.getFacebookUserProfile({ page, user_id });
+});
+
 /**
  * In Messenger, a postback occurs when a user clicks a button, which can fortunately be the start of the conversation
- *   (thanks to that get_started messenger-profile option 😉) so you can set a state for this new user right away!
+ *   (thanks to that get_started messenger-profile option 😉) so you can kick things off straight away!
+ *
+ * Also note how the user property from the before(...) function is available here!
  */
-schema.onPostback('GETTING_STARTED', function ({ payload, state, send, text, user }) {
-  state.reset(); // This exists to wipe the state, in case one already exists
-  state.setPointer('GETTING_STARTED_SENT'); // setPointer will mean the
-
+schema.onPostback('GETTING_STARTED', function ({ payload, send, user }) {
   return send([
     `Hey there ${user.first_name}!`,
     {
       type: 'text',
-      text: text('HIGH_FIVE_REQUEST', 'How about a high-five?', { user }),
+      text: 'How about a high-five? ✋',
       messenger_buttons: [
         {
           type: 'postback',
@@ -110,36 +118,8 @@ schema.onPostback('GETTING_STARTED', function ({ payload, state, send, text, use
 });
 
 /**
- * Once a state has been set, you can start to create functions to execute for random user-inputted text.
- * Usually handling this is very difficult, so this module tries to make that as painless as possible by splitting up
- *   the free-form text into smaller functions where the potential free-form input is very direct & predictable.
- * If you were expecting crazy natural-language magic, sorry to disappoint!
- */
-schema.onInput('GETTING_STARTED_SENT', function ({ send }) {
-  return send([
-    'Hmm, I didn\'t quite understand that 🙁',
-    {
-      type: 'text',
-      text: 'How about that high-five?',
-      messenger_buttons: [
-        {
-          type: 'postback',
-          title: '✋',
-          payload: JSON.stringify('RECEIVE_HIGH_FIVE'),
-        },
-        {
-          type: 'postback',
-          title: 'Nah',
-          payload: JSON.stringify('REJECTED_HIGH_FIVE'),
-        },
-      ],
-    },
-  ]);
-});
-
-/**
- * In the event a state isn't matched to free-flowing text, there is a way to set a catchall function, where you can
- *   assign a new state and salvage this situation.
+ * In the event a state isn't matched with a free-flowing text input, there is a way to set a catchall function where
+ * you can reset state or just prompt for a "correct" postback.
  */
 schema.catchInput(function ({ send }) {
   return send([
@@ -168,18 +148,14 @@ schema.catchInput(function ({ send }) {
  *   the state to a known state.
  */
 
-schema.onPostback('RECEIVE_HIGH_FIVE', function ({ payload, state, send, text, user }) {
-  state.setPointer('GETTING_STARTED_SENT');
-
+schema.onPostback('RECEIVE_HIGH_FIVE', function ({ payload, send, user }) {
   return send({
     type: 'image',
     src: 'http://media.giphy.com/media/14rRtgywkOitDa/giphy.gif',
   });
 });
 
-schema.onPostback('REJECTED_HIGH_FIVE', function ({ payload, state, send, text, user }) {
-  state.setPointer('GETTING_STARTED_SENT');
-
+schema.onPostback('REJECTED_HIGH_FIVE', function ({ payload, send, user }) {
   return send({
     type: 'text',
     text: 'Oh, ok thanks anyway..',

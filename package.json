@@ -1,6 +1,6 @@
 {
   "name": "comet-messenger",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Yet another way to interact with Facebook Messenger in Node-JS",
   "main": "src/index.js",
   "scripts": {
@@ -29,11 +29,7 @@
   "homepage": "https://github.com/car-throttle/comet-messenger#readme",
   "dependencies": {
     "debug": "^2.6.3",
-    "deep-extend": "^0.4.1",
-    "express-x-hub": "^1.0.4",
-    "lodash.get": "^4.4.2",
-    "lodash.template": "^4.4.0",
-    "lodash.templatesettings": "^4.1.0"
+    "express-x-hub": "^1.0.4"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
