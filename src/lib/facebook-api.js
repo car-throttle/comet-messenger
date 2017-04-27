@@ -1,4 +1,4 @@
-const debug = require('debug')('Comet:Facebook-API');
+// const debug = require('debug')('Comet:Facebook-API');
 const facebook = module.exports = {};
 const https = require('https');
 const querystring = require('querystring');
@@ -38,7 +38,7 @@ facebook.request = function ({ method, url, headers, body, access_token, fields,
         try { results.body = JSON.parse(results.body); }
         catch (err) { return reject(err); }
 
-        debug('res', results);
+        // debug('res', results);
         return resolve(results);
       });
     });
