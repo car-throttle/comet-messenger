@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const debug = require('debug')('Comet:Express-Router');
 const utils = require('./lib/utils');
 const xhub = require('express-x-hub');
 
@@ -27,13 +26,11 @@ module.exports = function createExpressRouter({ pages, queue, app_secret, verify
     if (!bodyParser) throw new Error('Module "body-parser" not found');
   }
 
-  const router = express.Router();
-
   const log_error = logger && logger.error ? (...args) => logger.error(...args) : (...args) => console.error(...args); // eslint-disable-line no-console
-  const log_warn = logger && logger.warn ? (...args) => logger.warn(...args) : (...args) => console.warn(...args); // eslint-disable-line no-console
-
   const page_ids = pages.filter(({ id }) => Boolean(id)).map(({ id }) => `${id}`);
   const status = pages.map(({ id, name }) => `${name || id} - ${crypto.randomBytes(16).toString('hex')}`).join('\n');
+
+  const router = express.Router();
 
   /**
    * Configure the GET request, so Facebook can verify this API.
@@ -110,8 +107,6 @@ module.exports = function createExpressRouter({ pages, queue, app_secret, verify
       });
 
       if (payloads.length) queue(payloads).catch(err => log_error(err));
-      else log_warn(`No payloads to queue for body: ${JSON.stringify(req.body)}`);
-
       return res.set('X-Payloads-Queued', JSON.stringify(payloads)).send('Thank you 😎');
     }
   ]);
