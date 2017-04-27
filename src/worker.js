@@ -85,8 +85,8 @@ function createSend({ page, user_id }) {
 
   return async function (messages) {
     messages = (Array.isArray(messages) ? messages : [ messages ]).map(messageFactory.toMessage);
-    for (let message of messages) {
-      await facebook.send({ access_token: token, message, user_id });
+    for (const message of messages) {
+      await facebook.send({ access_token: token, message, user_id }); // eslint-disable-line no-await-in-loop
     }
   };
 }

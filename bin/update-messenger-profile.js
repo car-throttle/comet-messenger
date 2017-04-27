@@ -8,7 +8,7 @@ if (!process.argv.slice(2).length) throw new Error('No bot file given');
 const { pages } = require(require('path').join(process.env.PWD, process.argv.slice(2).shift()));
 const facebook = require('../src/lib/facebook-api');
 
-const resolve = Promise.all(pages.filter(({ profile, token }) => profile && token).map(page => {
+const resolve = Promise.all(pages.filter(({ profile, token }) => profile && token).map(function (page) {
   return facebook.request({
     access_token: page.token,
     // version: 'v2.6',
