@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const debug = require('debug')('Comet:Express-Router');
 const utils = require('./lib/utils');
 const xhub = require('express-x-hub');
 
@@ -21,7 +22,7 @@ module.exports = function createExpressRouter({ pages, queue, app_secret, verify
   if (!app_secret) {
     console.warn('A comet router was created, but no app_secret was passed to the config'); // eslint-disable-line no-console
     console.warn('Facebook Messenger Verification will be skipped, technically allowing anyone to trigger messages'); // eslint-disable-line no-console
-    console.warn('Add your app\'s secret to comet.createServer to suppress this message'); // eslint-disable-line no-console
+    console.warn('Add your app\'s secret to comet.createExpressRouter to suppress this message'); // eslint-disable-line no-console
     console.warn('To ignore this & continue, install body-parser (required to parse the JSON-body)'); // eslint-disable-line no-console
     if (!bodyParser) throw new Error('Module "body-parser" not found');
   }
@@ -53,12 +54,12 @@ module.exports = function createExpressRouter({ pages, queue, app_secret, verify
    * All this does is flatten the messages into a single array, and append them to the queue.
    */
   router.post('/', [
-    app_secret ? xhub({ algorithm: 'sha1', secret: app_secret }) : bodyParser.json({ limit: '1mb' }),
+    app_secret ? xhub({ algorithm: 'sha1', limit: '1mb', secret: app_secret }) : bodyParser.json({ limit: '1mb' }),
     (req, res) => {
       res.status(200).set('Content-Type', 'text/plain');
 
-      if (app_secret && (!typeof req.isXHubValid !== 'function' || !req.isXHubValid())) {
-        return res.send('These violent delights have violent ends');
+      if (app_secret && (!req.isXHub || !req.isXHubValid())) {
+        return res.set('X-Rejected', 'x-hub').send('These violent delights have violent ends');
       }
 
       const payloads = [];
@@ -111,7 +112,7 @@ module.exports = function createExpressRouter({ pages, queue, app_secret, verify
       if (payloads.length) queue(payloads).catch(err => log_error(err));
       else log_warn(`No payloads to queue for body: ${JSON.stringify(req.body)}`);
 
-      return res.send('Thank you 😎');
+      return res.set('X-Payloads-Queued', JSON.stringify(payloads)).send('Thank you 😎');
     }
   ]);
 

@@ -22,7 +22,7 @@ facebook.request = function ({ method, url, headers, body, access_token, fields,
     opts.headers['Content-Type'] = 'application/json';
   }
 
-  debug('req', opts, body || '');
+  // debug('req', opts, body || '');
 
   return new Promise((resolve, reject) => {
     const req = https.request(opts, res => {
@@ -51,14 +51,15 @@ facebook.request = function ({ method, url, headers, body, access_token, fields,
 
 facebook.getUserProfile = function ({ access_token, user_id, version }) {
   return facebook.request({ access_token, version, url: `/${user_id}` }).then(({ body }) => {
-    if (body && body.first_name && body.last_name) return body;
+    if (body && body.first_name && body.last_name) return Object.assign({ id: user_id }, body);
     else throw new Error(`User not found for #${user_id}`);
   });
 };
 
 facebook.send = function ({ access_token, message, user_id, version }) {
   const body = { recipient: { id: user_id }, message };
-  return facebook.request({ access_token, version, method: 'POST', body }).then(({ status }) => {
-    if (status !== 200) throw new Error(`Invalid response: ${status}`);
-  });
+  return facebook.request({ access_token, version, method: 'POST', url: '/me/messages', body })
+    .then(({ status }) => {
+      if (status !== 200) throw new Error(`Invalid response: ${status}`);
+    });
 };

@@ -1,3 +1,5 @@
+const debug = require('debug')('Comet:Worker');
+
 const facebook = require('./lib/facebook-api');
 const messageFactory = require('./lib/messages');
 const stateFactory = require('./lib/state');
@@ -46,6 +48,8 @@ module.exports = function createWorker({ pages, schema }) {
         getState({ schema, page, user_id }), getUser({ schema, page, user_id })
       ]);
 
+      debug(JSON.stringify({ payload, state: state.fetch(), user }));
+
       if (state.isSilenced()) {
         // If the user has been SILENCED, no more communication should happen
         // Unless they initated a GETTING_STARTED
@@ -68,9 +72,7 @@ module.exports = function createWorker({ pages, schema }) {
         text: createText({ page }),
       });
 
-      if (state.isModified()) {
-        await saveState({ schema, page, state, user_id });
-      }
+      if (state.isModified()) await saveState({ schema, page, state: state.fetch(), user_id });
 
       return meta;
     },
@@ -81,13 +83,11 @@ function createSend({ page, user_id }) {
   const { token } = page;
   if (!token || !user_id) throw new Error('Missing page.token/user_id');
 
-  return messages => {
-    try { messages = (Array.isArray(messages) ? messages : [ messages ]).map(messageFactory.toMessage); }
-    catch (err) { return Promise.reject(err); }
-
-    const resolve = Promise.resolve();
-    messages.forEach(message => resolve.then(facebook.send({ access_token: token, message, user_id })));
-    return resolve;
+  return async function (messages) {
+    messages = (Array.isArray(messages) ? messages : [ messages ]).map(messageFactory.toMessage);
+    for (let message of messages) {
+      await facebook.send({ access_token: token, message, user_id });
+    }
   };
 }
 
@@ -97,9 +97,8 @@ function createText({ page }) {
 
 async function getState({ schema, page, user_id }) {
   const fn = schema._getFunction('getUserState');
-  if (typeof fn !== 'function') return Promise.resolve({});
-
-  const state = stateFactory.create(await fn({ page, user_id }));
+  const data = (typeof fn === 'function') ? await fn({ page, user_id }) : schema._getDefaultState();
+  const state = stateFactory.create(data);
   return state;
 }
 
@@ -108,10 +107,10 @@ function forceSilenced({ state }) {
 }
 
 function saveState({ schema, page, state, user_id }) {
-  const fn = schema._getFunction('saveUserState');
-  if (typeof fn !== 'function') return Promise.resolve({});
+  const fn = schema._getFunction('setUserState');
+  if (typeof fn !== 'function') return Promise.resolve();
 
-  return fn({ page, state: state.fetch(), user_id });
+  return fn({ page, state, user_id });
 }
 
 async function getUser({ schema, page, user_id }) {

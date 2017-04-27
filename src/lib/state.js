@@ -1,13 +1,8 @@
 const _get = require('lodash.get');
 const extend = require('deep-extend');
 
-const DEFAULT_STATE = {
-  pointer: '',
-  silenced: false,
-};
-
 module.exports.create = function (data) {
-  let state = Object.assign({}, DEFAULT_STATE, data);
+  let state = extend({}, data || {});
   let modified = false;
 
   function get(key, fallback) {
@@ -23,17 +18,17 @@ module.exports.create = function (data) {
     get,
     fetch: () => state,
     reset: () => {
-      state = Object.assign({}, DEFAULT_STATE);
+      state = {};
       modified = true;
     },
     update,
 
-    isModified: () => Boolean(modified),
+    isModified: () => modified,
 
-    getPointer: () => get(state, 'pointer', ''),
+    getPointer: () => get('pointer', ''),
     setPointer: pointer => update({ pointer }),
 
-    isSilenced: () => get(state, 'silenced', false) === true,
+    isSilenced: () => get('silenced', false) === true,
     setSilenced: value => state.silenced = value === true,
   };
 };

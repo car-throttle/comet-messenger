@@ -1,6 +1,9 @@
+const extend = require('deep-extend');
+
 const facebook = require('./lib/facebook-api');
 
 module.exports = function createSchema() {
+  const defaultState = {};
   const functions = {};
 
   function _getFunction(ref) {
@@ -24,12 +27,18 @@ module.exports = function createSchema() {
   return {
     _getFunction,
     _hasFunction,
-
     catchInput: fn => _setFunction('input._catch', fn),
     onInput: (handle, fn) => _setFunction(`input.${handle}`, fn),
     onPostback: (handle, fn) => _setFunction(`postback.${handle}`, fn),
+    onInputPostback: (handle, fn) => {
+      _setFunction(`input.${handle}`, fn);
+      _setFunction(`postback.${handle}`, fn);
+    },
     getUserProfile: fn => _setFunction('getUserProfile', fn),
     getUserState: fn => _setFunction('getUserState', fn),
     setUserState: fn => _setFunction('setUserState', fn),
+
+    _getDefaultState: () => defaultState,
+    defaultState: state => extend(defaultState, state),
   };
 };
