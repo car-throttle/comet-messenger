@@ -44,8 +44,8 @@ the page token you created on Facebook.
 ```
 
 Think of the `schema` as a conversation tree - every outcome is mapped and this is how you programmatically control
-your Messenger bot. All your business logic is going to end up in here! See the [Schema](#Schema) section for more
-information on the methods here and other methods you can use.
+your Messenger bot. All your business logic is going to end up in here! See the [Schema API](#Schema-API) section for
+more information on the methods here and other methods you can use.
 
 ```js
 const comet = require('comet-messenger');
@@ -54,12 +54,9 @@ const schema = comet.createSchema();
 /**
  * In Messenger, a postback occurs when a user clicks a button.
  */
-schema.onPostback('GETTING_STARTED', function ({ payload, state, send, text, user }) {
-  state.reset(); // This exists to wipe the state, in case one already exists
-  state.setPointer('GETTING_STARTED_SENT'); // setPointer will mean the
-
+schema.onPostback('GETTING_STARTED', function ({ payload, send }) {
   return send([
-    `Hey there ${user.first_name}!`,
+    `Hey there!`,
     {
       type: 'text',
       text: text('HIGH_FIVE_REQUEST', 'How about a high-five?', { user }),
@@ -136,6 +133,8 @@ app.use('/api/fb-messenger-bots', comet.createExpressRouter({
   // app_id: 6722778727758416..,
   app_secret: 'd3163a6893132fd0ccdffa1bb7cfee82..',
   verify_token: 'some-random-string-of-your-choice',
+
+  // logger: { ... } Any instance/object that has info, warn & error methods
 }));
 ```
 
