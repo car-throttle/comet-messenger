@@ -5,7 +5,7 @@
 ![Coverage Status](https://coveralls.io/repos/car-throttle/comet-messenger/badge.svg?branch=master&service=github)
 
 Node-JS microservice-oriented framework for interacting with
-[Facebook Messenger](https://developers.facebook.com/products/messenger/) :sunglasses:
+[Facebook Messenger](https://developers.facebook.com/products/messenger/).
 
 ----
 
@@ -24,7 +24,7 @@ $ npm install comet-messenger
 ```
 
 If preferred you can clone directly from the GitHub repository. `master` is guaranteed to be stable, but there's no
-guarantee of changes between major versions breaking existing code. [Semver](https://github.com/npm/node-semver) up, yo!
+guarantee of changes between major versions breaking existing code. Trust [Semver](https://github.com/npm/node-semver).
 
 ## Usage
 
@@ -81,7 +81,7 @@ schema.onPostback('GETTING_STARTED', function ({ payload, send }) {
  */
 schema.catchInput(function ({ send }) {
   return send([
-    'Hmm, I didn\'t quite understand that 🙁',
+    'Hmm, I didn\'t quite understand that',
     {
       type: 'text',
       text: 'How about that high-five?',
@@ -106,7 +106,7 @@ The `router` is the API router that the
 [Facebook webhook](https://developers.facebook.com/docs/messenger-platform/webhook-reference) will hit. It takes
 messages sent from Facebook and pushes the messages onto your preferred queue stack. This example assumes you'll be
 dropping it into an existing Express application and using [async](https://npm.im/async) for your queue. The router
-requires your Facebook app secret & the verify token that you specified when setting up that Facebook webhook :wink:
+requires your Facebook app secret & the verify token that you specified when setting up that Facebook webhook.
 
 ```js
 const async = require('async');
@@ -246,7 +246,7 @@ schema.before(async function (req) {
 
 ### schema.after(function)
 
-This queues a function to run after the main input/postback function. Be creative :sunglasses:
+This queues a function to run after the main input/postback function.
 
 ```js
 schema.before(async function (req) {
@@ -283,7 +283,7 @@ schema.onInput('SENDING_NEW_PROFILE_PIC', function ({ payload, send }) {
 
 - More documentation
 - Unit tests. Although this has been built in a modular-fashion unit-tests are still required!
-  Going for :100:% code-coverage too, so watch this space!
+  Going for 100% code-coverage too, so watch this space!
 
 ## Questions
 

@@ -111,7 +111,7 @@ module.exports = function createExpressRouter({ pages, queue, app_secret, verify
       });
 
       if (payloads.length) queue(payloads).catch(err => log_error(err));
-      return res.set('X-Payloads-Queued', JSON.stringify(payloads)).send('Thank you 😎');
+      return res.set('X-Payloads-Queued', payloads.length).send('Thank you 😎');
     }
   ]);
 
